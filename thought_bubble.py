@@ -26,7 +26,7 @@ class DesktopPetWithPopup:
         self.small_images = []
         self.small_labels = []
         for i in range(5):
-            img, _, _ = self.resize("pngs/full_bubble.png", 30, 30)
+            img, _, _ = self.resize("pngs/blank_bubble.png", 30, 30)
             self.small_images.append(img)
             label = tk.Label(self.root, image=img)
             label.bind("<Button-1>", self.on_small_image_click)
@@ -86,26 +86,22 @@ class DesktopPetWithPopup:
         center_y = pet_y
 
         num_images = len(self.small_labels)
-        radius = 80  # Adjust this value to change the size of the arc
-        start_angle = -math.pi / 2  # Start from the top
+        radius = 55  # Adjust this value to change the size of the arc
+        start_angle = -math.pi  # Start from the top
         angle_step = math.pi / (num_images - 1)  # Distribute evenly across the top half
 
         for i, label in enumerate(self.small_labels):
             angle = start_angle + i * angle_step
             x = center_x + int(radius * math.cos(angle)) - 20  # 20 is half the width of small images
-            y = center_y + int(radius * math.sin(angle)) - 20  # 20 is half the height of small images
+            y = center_y + int(radius * math.sin(angle)) + 50  # 20 is half the height of small images
             label.place(x=x, y=y)
-
-    def on_small_image_click(self, event):
-        if event.widget == self.small_labels[2]:  # Middle image
-            self.pop_up_todo()
 
     def hide_small_images(self):
         for label in self.small_labels:
             label.place_forget()
 
     def on_small_image_click(self, event):
-        if event.widget == self.small_labels[2]:  # Middle right image
+        if event.widget == self.small_labels[0]:  # Middle right image
             self.pop_up_todo()
 
     def pop_up_todo(self):
