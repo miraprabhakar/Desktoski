@@ -21,7 +21,7 @@ class DesktopPetWithPopup:
 
         self.pet_image, self.pet_width, self.pet_height = self.resize(self.stationary_image_path, 200, 200)
         self.pet_label = tk.Label(self.root, image=self.pet_image)
-        self.pet_label.place(x=800, y=(root.winfo_screenheight()+200))
+        self.position_pet()
 
         self.stop_walk = False
         self.walk_after_id = None
@@ -44,6 +44,18 @@ class DesktopPetWithPopup:
         # Load todo list from file
         self.todo_list = self.load_todo_list()
 
+        # Bind the window resize event
+        self.root.bind("<Configure>", self.on_window_resize)
+
+    def position_pet(self):
+        window_height = self.root.winfo_height()
+        current_x = self.pet_label.winfo_x()
+        pet_y = window_height - self.pet_height
+        self.pet_label.place(x=current_x, y=pet_y)
+
+    def on_window_resize(self, event):
+        self.position_pet()
+
     @staticmethod
     def resize(image_path, width, height):
         img = Image.open(image_path)
@@ -52,9 +64,10 @@ class DesktopPetWithPopup:
 
     def pet_walk(self):
         if not self.stop_walk:
-            current_x, current_y = self.pet_label.winfo_x(), self.pet_label.winfo_y()
+            current_x = self.pet_label.winfo_x()
+            window_width = self.root.winfo_width()
             target_lower = max(current_x - 300, 0)
-            target_upper = min(current_x + 300, 1200)
+            target_upper = min(current_x + 300, window_width - self.pet_width)
             target_x = random.randint(target_lower, target_upper)
             
             step_size = 2
@@ -70,7 +83,8 @@ class DesktopPetWithPopup:
                 else:
                     self.current_animation = None
 
-                self.pet_label.place(x=current_x, y=root.winfo_screenheight()- 280)
+                self.position_pet()  # Update y-position
+                self.pet_label.place(x=current_x)
                 
                 if self.current_animation:
                     self.animate_pet()
