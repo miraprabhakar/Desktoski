@@ -10,17 +10,23 @@ import os
 balance = 0
 
 class DesktopPetWithPopup:
-    def __init__(self, root, image_path, window_size=(1200, 800)):
+    def __init__(self, root, window_size=(1200, 800)):
         self.root = root
         self.root.title("Desktop Pet")
         self.root.geometry(f"{window_size[0]}x{window_size[1]}")
 
-        self.pet_image, self.pet_width, self.pet_height = self.resize(image_path, 200, 200)
+        self.stationary_image_path = "pngs/oski front facing.png"
+        self.right_animation = ["pngs/right1.png", "pngs/right2.png"]
+        self.left_animation = ["pngs/left1.png", "pngs/left2.png"]
+
+        self.pet_image, self.pet_width, self.pet_height = self.resize(self.stationary_image_path, 200, 200)
         self.pet_label = tk.Label(self.root, image=self.pet_image)
         self.pet_label.place(x=800, y=640)
 
         self.stop_walk = False
         self.walk_after_id = None
+        self.current_animation = None
+        self.animation_frame = 0
 
         self.pet_label.bind("<Enter>", self.on_mouse_enter)
         self.pet_label.bind("<Leave>", self.on_mouse_leave)
@@ -57,17 +63,36 @@ class DesktopPetWithPopup:
                 nonlocal current_x
                 if current_x > target_x:
                     current_x -= step_size
+                    self.current_animation = self.left_animation
                 elif current_x < target_x:
                     current_x += step_size
+                    self.current_animation = self.right_animation
+                else:
+                    self.current_animation = None
 
                 self.pet_label.place(x=current_x, y=640)
+                
+                if self.current_animation:
+                    self.animate_pet()
                 
                 if abs(current_x - target_x) > step_size:
                     self.walk_after_id = self.root.after(100, move_step)
                 else:
+                    self.current_animation = None
+                    self.update_pet_image(self.stationary_image_path)
                     self.walk_after_id = self.root.after(random.randint(1000, 4000), self.pet_walk)
 
             move_step()
+
+    def animate_pet(self):
+        if self.current_animation:
+            self.animation_frame = (self.animation_frame + 1) % len(self.current_animation)
+            self.update_pet_image(self.current_animation[self.animation_frame])
+
+    def update_pet_image(self, image_path):
+        new_image, _, _ = self.resize(image_path, 200, 200)
+        self.pet_label.configure(image=new_image)
+        self.pet_label.image = new_image
 
     def on_mouse_enter(self, event):
         self.stop_walk = True
@@ -96,7 +121,7 @@ class DesktopPetWithPopup:
         for i, label in enumerate(self.small_labels):
             angle = start_angle + i * angle_step
             x = center_x + int(radius * math.cos(angle)) - 20  # 20 is half the width of small images
-            y = center_y + int(radius * math.sin(angle)) + 50  # 20 is half the height of small images
+            y = center_y + int(radius * math.sin(angle)) + 50
             label.place(x=x, y=y)
 
     def hide_small_images(self):
@@ -244,5 +269,5 @@ class DesktopPetWithPopup:
         self.root.mainloop()
 if __name__ == "__main__":
     root = tk.Tk()
-    pet = DesktopPetWithPopup(root, "pngs/oski_bear.png")
+    pet = DesktopPetWithPopup(root)
     pet.run()
