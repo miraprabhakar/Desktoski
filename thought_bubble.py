@@ -163,19 +163,26 @@ class DesktopPetWithPopup:
         self.coin_label = tk.Label(shop_window, text=f"Coins: {balance}", font=("Arial", 14), bg='#F0F0F0', fg='black',borderwidth=2)
         self.coin_label.place(x=640, y=50)
         
-        pil_image1 = Image.open("/Users/theman1483/Documents/GitHub/Desktoski/pngs/oski_image.png")
+        pil_image1 = Image.open("./pngs/oski_image.png")
         resized_image1 = pil_image1.resize((100, 100))  # Resize to 100x100 pixels
         button_image1 = ImageTk.PhotoImage(resized_image1)
-
         add_button = tk.Button(entry_frame, image=button_image1, command=self.open_clothing,borderwidth=0)
         add_button.place(x=100, y=100)
         add_button.image = button_image1
 
-        add_button = tk.Button(entry_frame, text="Testing2", command=self.add_task)
-        add_button.place(x=200, y=100)
+        pil_image2 = Image.open("./pngs/smallHardness.png")
+        resized_image2 = pil_image2.resize((100, 100))  # Resize to 100x100 pixels
+        button_image2 = ImageTk.PhotoImage(resized_image2)
+        add_button = tk.Button(entry_frame, image=button_image2, command=self.feed_oski)
+        add_button.place(x=250, y=100)
+        add_button.image = button_image2
 
-        add_button = tk.Button(entry_frame, text="Testing3", command=self.add_task)
-        add_button.place(x=300, y=100)
+        pil_image3 = Image.open("./pngs/oski_image.png")
+        resized_image3 = pil_image3.resize((100, 100))  # Resize to 100x100 pixels
+        button_image3 = ImageTk.PhotoImage(resized_image3)
+        add_button = tk.Button(entry_frame, image=button_image3, command=self.feed_oski)
+        add_button.place(x=400, y=100)
+        add_button.image = button_image3
 
     def open_clothing(self):
         clothing_window = tk.Toplevel(self.root)
@@ -185,6 +192,16 @@ class DesktopPetWithPopup:
         
         entry_frame = tk.Frame(clothing_window, bg='#F0F0F0')
         entry_frame.place(x=20, y=50, width=600, height=400)
+
+    def feed_oski(self):
+        feed_window = tk.Toplevel(self.root)
+        feed_window.title("dinner time")
+        feed_window.geometry("400x400")
+        feed_window.configure(bg='#F0F0F0')
+
+        entry_frame = tk.Frame(feed_window, bg='#F0F0F0')
+        entry_frame.place(x=20, y=50, width=600, height=400)
+
 
 
     def pop_up_todo(self):
