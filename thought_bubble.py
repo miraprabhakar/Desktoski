@@ -227,7 +227,9 @@ class DesktopPetWithPopup:
     def load_todo_list(self):
         try:
             with open('todo_list.json', 'r') as f:
-                return json.load(f)
+                data = json.load(f)
+                # Ensure each task is a tuple (task, checked_state)
+                return [(task, state) if isinstance(task, tuple) else (task, 0) for task, state in data]
         except FileNotFoundError:
             return []
 
