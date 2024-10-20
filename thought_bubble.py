@@ -1,3 +1,4 @@
+import math
 import tkinter as tk
 from tkinter import simpledialog
 from PIL import Image, ImageTk
@@ -81,15 +82,23 @@ class DesktopPetWithPopup:
     def show_small_images(self):
         pet_x = self.pet_label.winfo_x()
         pet_y = self.pet_label.winfo_y()
-        positions = [
-            (pet_x - 20, pet_y - 20),
-            (pet_x + 50, pet_y - 30),
-            (pet_x + 120, pet_y - 20),
-            (pet_x + 190, pet_y + 50),
-            (pet_x + 210, pet_y + 120)
-        ]
-        for label, pos in zip(self.small_labels, positions):
-            label.place(x=pos[0], y=pos[1])
+        center_x = pet_x + self.pet_width // 2
+        center_y = pet_y
+
+        num_images = len(self.small_labels)
+        radius = 80  # Adjust this value to change the size of the arc
+        start_angle = -math.pi / 2  # Start from the top
+        angle_step = math.pi / (num_images - 1)  # Distribute evenly across the top half
+
+        for i, label in enumerate(self.small_labels):
+            angle = start_angle + i * angle_step
+            x = center_x + int(radius * math.cos(angle)) - 20  # 20 is half the width of small images
+            y = center_y + int(radius * math.sin(angle)) - 20  # 20 is half the height of small images
+            label.place(x=x, y=y)
+
+    def on_small_image_click(self, event):
+        if event.widget == self.small_labels[2]:  # Middle image
+            self.pop_up_todo()
 
     def hide_small_images(self):
         for label in self.small_labels:
