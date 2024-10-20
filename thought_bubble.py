@@ -2,6 +2,7 @@ import math
 import tkinter as tk
 from tkinter import simpledialog
 from tkinter import Tk, Button, PhotoImage
+from tkinter import Checkbutton, IntVar
 from PIL import Image, ImageTk
 import random
 import json
@@ -197,15 +198,20 @@ class DesktopPetWithPopup:
         canvas.configure(yscrollcommand=scrollbar.set)
 
         # Add tasks to the scrollable frame
-        for i, task in enumerate(self.todo_list):
+        self.check_vars = []  # Store IntVar for each checkbox
+
+        for i, (task, checked_state) in enumerate(self.todo_list):
             task_frame = tk.Frame(scrollable_frame, bg='#F0F0F0')
             task_frame.pack(fill=tk.X, padx=5, pady=2)
 
+            # Create a checkbox for each task
+            var = IntVar(value=checked_state)  # Restore checked/unchecked state
+            self.check_vars.append(var)
+            checkbox = Checkbutton(task_frame, variable=var, bg='#F0F0F0')
+            checkbox.pack(side=tk.LEFT)
+
             task_text = tk.Label(task_frame, text=task, bg='#F0F0F0', font=("Helvetica", 12))
             task_text.pack(side=tk.LEFT)
-
-            delete_button = tk.Button(task_frame, text="Delete", command=lambda i=i: self.delete_task(i))
-            delete_button.pack(side=tk.RIGHT)
 
         # Pack the canvas and scrollbar
         canvas.pack(side="left", fill="both", expand=True)
@@ -215,35 +221,48 @@ class DesktopPetWithPopup:
         entry_frame = tk.Frame(todo_window, bg='#F0F0F0')
         entry_frame.pack(pady=10, padx=20, fill=tk.X)
 
-        self.new_task_entry = tk.Entry(entry_frame, font=("Helvetica", 12))
+        self.new_task_entry = tk.Entry(entry_frame, font=("Helvetica", 12), fg="blue")
         self.new_task_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
 
         add_button = tk.Button(entry_frame, text="Add Task", command=self.add_task)
         add_button.pack(side=tk.RIGHT)
 
+        # Bind the Enter key to add_task function
+        self.new_task_entry.bind("<Return>", lambda event: self.add_task())
+
+        # Add a button to remove checked tasks
+        remove_button = tk.Button(todo_window, text="Remove Selected Tasks", command=self.remove_checked_tasks)
+        remove_button.pack(pady=10)
+
     def add_task(self):
         new_task = self.new_task_entry.get()
         if new_task:
-            self.todo_list.append(new_task)
+            # Append the new task with unchecked status (0)
+            self.todo_list.append((new_task, 0))
             self.new_task_entry.delete(0, tk.END)
             self.save_todo_list()
             self.pop_up_todo()  # Refresh the todo list window
 
-    def delete_task(self, index):
-        del self.todo_list[index]
+    def remove_checked_tasks(self):
+        # Remove tasks where the checkbox is checked (value == 1)
+        self.todo_list = [(task, var.get()) for task, var in zip(self.todo_list, self.check_vars) if not var.get()]
         self.save_todo_list()
         self.pop_up_todo()  # Refresh the todo list window
 
     def load_todo_list(self):
         try:
             with open('todo_list.json', 'r') as f:
-                return json.load(f)
+                data = json.load(f)
+                # Ensure each task is a tuple (task, checked_state)
+                return [(task, state) if isinstance(task, tuple) else (task, 0) for task, state in data]
         except FileNotFoundError:
             return []
 
     def save_todo_list(self):
+        # Save the task text and the checkbox state
         with open('todo_list.json', 'w') as f:
             json.dump(self.todo_list, f)
+
 
     def run(self):
         self.pet_walk()
