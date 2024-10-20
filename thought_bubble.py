@@ -139,6 +139,7 @@ class DesktopPetWithPopup:
             label.place(x=x, y=y)
 
     def hide_small_images(self):
+        self.stop_walk = False
         for label in self.small_labels:
             label.place_forget()
 
