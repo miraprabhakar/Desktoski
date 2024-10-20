@@ -20,8 +20,8 @@ class DesktopPetWithPopup:
         self.left_animation = ["pngs/left1.png", "pngs/left2.png"]
 
         # Load and set the background image
-        self.bg_image_path = "pngs/desktop.png"
-        self.background_label = tk.Label(self.root, image=self.bg_image_path)
+        # self.bg_image_path = "pngs/desktop.png"
+        # self.background_label = tk.Label(self.root, image=self.bg_image_path)
         
 
         self.pet_image, self.pet_width, self.pet_height = self.resize(self.stationary_image_path, 200, 200)
