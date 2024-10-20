@@ -242,7 +242,7 @@ class DesktopPetWithPopup:
             checkbox = Checkbutton(task_frame, variable=var, bg='#F0F0F0')
             checkbox.pack(side=tk.LEFT)
 
-            task_text = tk.Label(task_frame, text=task, bg='#F0F0F0', font=("Helvetica", 12))
+            task_text = tk.Label(task_frame, text=task, bg='#F0F0F0', font=("Helvetica", 14),fg="black")
             task_text.pack(side=tk.LEFT)
 
         # Pack the canvas and scrollbar
@@ -253,7 +253,7 @@ class DesktopPetWithPopup:
         entry_frame = tk.Frame(todo_window, bg='#F0F0F0')
         entry_frame.pack(pady=10, padx=20, fill=tk.X)
 
-        self.new_task_entry = tk.Entry(entry_frame, font=("Helvetica", 12), fg="blue")
+        self.new_task_entry = tk.Entry(entry_frame, font=("Helvetica", 12), fg="white")
         self.new_task_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
 
         add_button = tk.Button(entry_frame, text="Add Task", command=self.add_task)
