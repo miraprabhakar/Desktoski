@@ -6,7 +6,10 @@ from tkinter import PhotoImage, Label
 from tkinter import filedialog
 from PIL import Image, ImageTk
 import random
-clicked = False
+stopWalk = False
+
+#IMAGE SETUP------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------
 
 
 # Create the main window
@@ -22,23 +25,22 @@ def resize(image_path, width, height):
     img_resized = img.resize((width, height))
     
     # Convert the image to a PhotoImage that Tkinter can display
-    return ImageTk.PhotoImage(img_resized)
+    return ImageTk.PhotoImage(img_resized),width,height
 
 
-image_path = "Untitled_Artwork.png"
-pet_image = resize(image_path,200,200)
+image_path = "oski_image.png"
+pet_image,pet_width,pet_height = resize(image_path,200,200)
 # Create a label to hold the image
 pet_label = tk.Label(root, image=pet_image)
 pet_label.place(x=800, y=640)
 
 
-def on_pet_click(event):
-    print("You clicked the pet!")
+#MOVEMENT----------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------
 
-# Bind the left mouse button click to the pet
-pet_label.bind("<Button-1>", on_pet_click)
 
-def move_pet_smoothly():
+def petwalk():
+
     current_x, current_y = pet_label.winfo_x(), pet_label.winfo_y()
     targetLower = current_x-300
     if targetLower < 0:
@@ -52,26 +54,52 @@ def move_pet_smoothly():
     step_size = 1
 
     def move_step():
+        
         nonlocal current_x
         if current_x > target_x:
             current_x -= step_size
         elif current_x < target_x:
             current_x += step_size
-
+        #print(str(clicked))
 
         pet_label.place(x=current_x, y=640)
 
         # Continue moving if we haven't reached the target
         if abs(current_x - target_x) > step_size:
-            root.after(10, move_step)  # Adjust speed of movement here
+            root.after(100, move_step)  # Adjust speed of movement here
         else: 
-            root.after(random.randint(1000,4000),move_pet_smoothly())
-            
+            root.after(random.randint(1000,4000),petwalk())
+    
     move_step()
 
-# Start the pet's walking animation
-move_pet_smoothly()
+#CLICKING----------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------
 
-#movepet()
+
+def on_mouse_enter(event):
+    print("hello")
+    pet_label.config(text="Mouse is over the image",bd="blue")
+    stopWalk = True
+def on_mouse_leave(event):
+    print("bye")
+    pet_label.config(text="Mouse is not over the image",bd="red")
+    stopWalk = False
+    petwalk()
+
+
+pet_label.bind("<Enter>", on_mouse_enter)
+pet_label.bind("<Leave>", on_mouse_leave)
+
+
+
+#MOVING----------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------
+
+
+# Start the pet's walking animation
+
+
+
+
 root.mainloop()
 
