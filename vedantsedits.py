@@ -1,12 +1,13 @@
 import math
 import tkinter as tk
-from tkinter import simpledialog
+from tkinter import simpledialog, messagebox
 from tkinter import Tk, Button, PhotoImage
 from tkinter import Checkbutton, IntVar
 from PIL import Image, ImageTk
 import random
 import json
 import os
+
 balance = 0
 
 class DesktopPetWithPopup:
@@ -18,11 +19,6 @@ class DesktopPetWithPopup:
         self.stationary_image_path = "pngs/oski front facing.png"
         self.right_animation = ["pngs/right1.png", "pngs/right2.png"]
         self.left_animation = ["pngs/left1.png", "pngs/left2.png"]
-
-        # Load and set the background image
-        self.bg_image_path = "pngs/desktop.png"
-        self.background_label = tk.Label(self.root, image=self.bg_image_path)
-        
 
         self.pet_image, self.pet_width, self.pet_height = self.resize(self.stationary_image_path, 200, 200)
         self.pet_label = tk.Label(self.root, image=self.pet_image)
@@ -51,6 +47,9 @@ class DesktopPetWithPopup:
 
         # Bind the window resize event
         self.root.bind("<Configure>", self.on_window_resize)
+
+        # Initialize balance
+        self.balance = self.load_balance()
 
     def position_pet(self):
         window_height = self.root.winfo_height()
@@ -140,7 +139,7 @@ class DesktopPetWithPopup:
         for i, label in enumerate(self.small_labels):
             angle = start_angle + i * angle_step
             x = center_x + int(radius * math.cos(angle)) - 20  # 20 is half the width of small images
-            y = center_y + int(radius * math.sin(angle)) + 100
+            y = center_y + int(radius * math.sin(angle)) + 50
             label.place(x=x, y=y)
 
     def hide_small_images(self):
@@ -154,7 +153,35 @@ class DesktopPetWithPopup:
         if event.widget == self.small_labels[1]:  # Image 2
             self.pop_up_shop()
 
-    
+    def setup_google_calendar(self):
+        creds = None
+        if os.path.exists('token.json'):
+            creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials.json', SCOPES)
+                creds = flow.run_local_server(port=0)
+            with open('token.json', 'w') as token:
+                token.write(creds.to_json())
+        
+        return build('calendar', 'v3', credentials=creds)
+
+    def fetch_calendar_tasks(self):
+        now = datetime.datetime.utcnow().isoformat() + 'Z'
+        events_result = self.calendar_service.events().list(calendarId='primary', timeMin=now,
+                                                            maxResults=10, singleEvents=True,
+                                                            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        
+        calendar_tasks = []
+        for event in events:
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            calendar_tasks.append((f"{start}: {event['summary']}", 0))
+        
+        return calendar_tasks
 
     def pop_up_shop(self):
         shop_window = tk.Toplevel(self.root)
@@ -212,7 +239,7 @@ class DesktopPetWithPopup:
     def pop_up_todo(self):
         todo_window = tk.Toplevel(self.root)
         todo_window.title("Oski's Todo")
-        todo_window.geometry("400x500")
+        todo_window.geometry("400x550")
         todo_window.configure(bg='#F0F0F0')
 
         # Create a frame for the todo list
@@ -244,10 +271,10 @@ class DesktopPetWithPopup:
             # Create a checkbox for each task
             var = IntVar(value=checked_state)  # Restore checked/unchecked state
             self.check_vars.append(var)
-            checkbox = Checkbutton(task_frame, variable=var, bg='#F0F0F0')
+            checkbox = Checkbutton(task_frame, variable=var, bg='#F0F0F0', command=self.update_coins)
             checkbox.pack(side=tk.LEFT)
 
-            task_text = tk.Label(task_frame, text=task, bg='#F0F0F0', font=("Helvetica", 14),fg="black")
+            task_text = tk.Label(task_frame, text=task, bg='#F0F0F0', font=("Helvetica", 12))
             task_text.pack(side=tk.LEFT)
 
         # Pack the canvas and scrollbar
@@ -258,7 +285,7 @@ class DesktopPetWithPopup:
         entry_frame = tk.Frame(todo_window, bg='#F0F0F0')
         entry_frame.pack(pady=10, padx=20, fill=tk.X)
 
-        self.new_task_entry = tk.Entry(entry_frame, font=("Helvetica", 12), fg="white")
+        self.new_task_entry = tk.Entry(entry_frame, font=("Helvetica", 12), fg="blue")
         self.new_task_entry.pack(side=tk.LEFT, expand=True, fill=tk.X)
 
         add_button = tk.Button(entry_frame, text="Add Task", command=self.add_task)
@@ -271,6 +298,21 @@ class DesktopPetWithPopup:
         remove_button = tk.Button(todo_window, text="Remove Selected Tasks", command=self.remove_checked_tasks)
         remove_button.pack(pady=10)
 
+        # Add a button to connect to Google Calendar
+        google_button = tk.Button(todo_window, text="Connect to Google Calendar", command=self.connect_to_google)
+        google_button.pack(pady=10)
+
+        # Display current balance
+        self.balance_label = tk.Label(todo_window, text=f"Current Balance: {self.balance} coins", bg='#F0F0F0', font=("Helvetica", 12))
+        self.balance_label.pack(pady=10)
+
+    def update_coins(self):
+        completed_tasks = sum(var.get() for var in self.check_vars)
+        self.balance = completed_tasks * 10  # 10 coins per completed task
+        self.save_balance()
+        if hasattr(self, 'balance_label'):
+            self.balance_label.config(text=f"Current Balance: {self.balance} coins")
+
     def add_task(self):
         new_task = self.new_task_entry.get()
         if new_task:
@@ -282,28 +324,40 @@ class DesktopPetWithPopup:
 
     def remove_checked_tasks(self):
         # Remove tasks where the checkbox is checked (value == 1)
-        self.todo_list = [(task, var.get()) for task, var in zip(self.todo_list, self.check_vars) if not var.get()]
+        self.todo_list = [(task, 0) for task, var in zip(self.todo_list, self.check_vars) if not var.get()]
         self.save_todo_list()
+        self.update_coins()
         self.pop_up_todo()  # Refresh the todo list window
+
+    def connect_to_google(self):
+        messagebox.showinfo("Google Calendar", "This feature is not yet implemented. It would allow you to connect and sync tasks with Google Calendar.")
 
     def load_todo_list(self):
         try:
             with open('todo_list.json', 'r') as f:
-                data = json.load(f)
-                # Ensure each task is a tuple (task, checked_state)
-                return [(task, state) if isinstance(task, tuple) else (task, 0) for task, state in data]
+                return json.load(f)
         except FileNotFoundError:
             return []
 
     def save_todo_list(self):
-        # Save the task text and the checkbox state
         with open('todo_list.json', 'w') as f:
             json.dump(self.todo_list, f)
 
+    def load_balance(self):
+        try:
+            with open('balance.json', 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return 0
+
+    def save_balance(self):
+        with open('balance.json', 'w') as f:
+            json.dump(self.balance, f)
 
     def run(self):
         self.pet_walk()
         self.root.mainloop()
+
 if __name__ == "__main__":
     root = tk.Tk()
     pet = DesktopPetWithPopup(root)
