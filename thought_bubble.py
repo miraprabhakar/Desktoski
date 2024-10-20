@@ -20,7 +20,7 @@ class DesktopPetWithPopup:
 
         self.pet_image, self.pet_width, self.pet_height = self.resize(self.stationary_image_path, 200, 200)
         self.pet_label = tk.Label(self.root, image=self.pet_image)
-        self.pet_label.place(x=800, y=640)
+        self.pet_label.place(x=800, y=(root.winfo_screenheight()+200))
 
         self.stop_walk = False
         self.walk_after_id = None
@@ -69,7 +69,7 @@ class DesktopPetWithPopup:
                 else:
                     self.current_animation = None
 
-                self.pet_label.place(x=current_x, y=640)
+                self.pet_label.place(x=current_x, y=root.winfo_screenheight()- 280)
                 
                 if self.current_animation:
                     self.animate_pet()
