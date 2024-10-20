@@ -25,7 +25,7 @@ def resize(image_path, width, height):
     return ImageTk.PhotoImage(img_resized)
 
 
-image_path = "Untitled_Artwork.png"
+image_path = "oski_bear.png"
 pet_image = resize(image_path,200,200)
 # Create a label to hold the image
 pet_label = tk.Label(root, image=pet_image)
