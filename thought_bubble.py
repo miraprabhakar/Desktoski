@@ -1,10 +1,12 @@
 import math
 import tkinter as tk
 from tkinter import simpledialog
+from tkinter import Tk, Button, PhotoImage
 from PIL import Image, ImageTk
 import random
 import json
 import os
+balance = 0
 
 class DesktopPetWithPopup:
     def __init__(self, root, image_path, window_size=(1200, 800)):
@@ -103,6 +105,46 @@ class DesktopPetWithPopup:
     def on_small_image_click(self, event):
         if event.widget == self.small_labels[0]:  # Middle right image
             self.pop_up_todo()
+        if event.widget == self.small_labels[1]:  # Image 2
+            self.pop_up_shop()
+
+    
+
+    def pop_up_shop(self):
+        shop_window = tk.Toplevel(self.root)
+        shop_window.title("Oski's Shop")
+        shop_window.geometry("800x600")
+        shop_window.configure(bg='#F0F0F0')
+
+        entry_frame = tk.Frame(shop_window, bg='#F0F0F0')
+        entry_frame.place(x=20, y=50, width=800, height=600)
+
+        self.coin_label = tk.Label(shop_window, text=f"Coins: {balance}", font=("Arial", 14), bg='#F0F0F0', fg='black',borderwidth=2)
+        self.coin_label.place(x=640, y=50)
+        
+        pil_image1 = Image.open("/Users/theman1483/Documents/GitHub/Desktoski/pngs/oski_image.png")
+        resized_image1 = pil_image1.resize((100, 100))  # Resize to 100x100 pixels
+        button_image1 = ImageTk.PhotoImage(resized_image1)
+
+        add_button = tk.Button(entry_frame, image=button_image1, command=self.open_clothing,borderwidth=0)
+        add_button.place(x=100, y=100)
+        add_button.image = button_image1
+
+        add_button = tk.Button(entry_frame, text="Testing2", command=self.add_task)
+        add_button.place(x=200, y=100)
+
+        add_button = tk.Button(entry_frame, text="Testing3", command=self.add_task)
+        add_button.place(x=300, y=100)
+
+    def open_clothing(self):
+        clothing_window = tk.Toplevel(self.root)
+        clothing_window.title("Clothing!")
+        clothing_window.geometry("600x400")
+        clothing_window.configure(bg='#F0F0F0')
+        
+        entry_frame = tk.Frame(clothing_window, bg='#F0F0F0')
+        entry_frame.place(x=20, y=50, width=600, height=400)
+
 
     def pop_up_todo(self):
         todo_window = tk.Toplevel(self.root)
@@ -181,7 +223,6 @@ class DesktopPetWithPopup:
     def run(self):
         self.pet_walk()
         self.root.mainloop()
-
 if __name__ == "__main__":
     root = tk.Tk()
     pet = DesktopPetWithPopup(root, "pngs/oski_bear.png")
